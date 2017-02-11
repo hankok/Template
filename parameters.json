@@ -1,0 +1,191 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "_comment": "Customizable Variables for template deploy, this will show on Template -> Deploy Page of Azure portal",
+        "environment":{
+            "defaultValue": "staging",
+            "type": "String"
+        },
+        "region_id": {
+            "value": null
+        },
+        "subscriptions": {
+            "value": null
+        },
+        "resourceGroups": {
+            "value": null
+        },
+        "publicKey_PlainText": {
+            "value": null
+        },
+        "Password_For_NetScalers": {
+            "value": null
+        },
+        "Password_For_MAS": {
+            "value": null
+        },
+        "virtualMachines_Ctrl1_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_Ctrl2_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_Edge1_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_Edge2_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_RedisMaster_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_RedisSlave1_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_RedisSlave2_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_SN1_adminPassword": {
+            "value": null
+        },
+        "virtualMachines_SN2_adminPassword": {
+            "value": null
+        },
+        "availabilitySets_AvailabilitySetForCtrl_name": {
+            "value": null
+        },
+        "availabilitySets_AvailabilitySetForEdge_name": {
+            "value": null
+        },
+        "availabilitySets_AvailabilitySetForRedis_name": {
+            "value": null
+        },
+        "availabilitySets_AvailabilitySetForSN_name": {
+            "value": null
+        },
+        "virtualMachines_Ctrl1_name": {
+            "value": null
+        },
+        "virtualMachines_Ctrl2_name": {
+            "value": null
+        },
+        "virtualMachines_Edge1_name": {
+            "value": null
+        },
+        "virtualMachines_Edge2_name": {
+            "value": null
+        },
+        "virtualMachines_RedisMaster_name": {
+            "value": null
+        },
+        "virtualMachines_RedisSlave1_name": {
+            "value": null
+        },
+        "virtualMachines_RedisSlave2_name": {
+            "value": null
+        },
+        "virtualMachines_SN1_name": {
+            "value": null
+        },
+        "virtualMachines_SN2_name": {
+            "value": null
+        },
+        "loadBalancers_CTRL_ELB_name": {
+            "value": null
+        },
+        "loadBalancers_CTRL_Internal_ELB_name": {
+            "value": null
+        },
+        "loadBalancers_EN_ELB_name": {
+            "value": null
+        },
+        "loadBalancers_Redis_Internal_ELB_name": {
+            "value": null
+        },
+        "loadBalancers_SN_ELB_name": {
+            "value": null
+        },
+        "networkInterfaces_Ctrl1Nic_name": {
+            "value": null
+        },
+        "networkInterfaces_Ctrl2Nic_name": {
+            "value": null
+        },
+        "networkInterfaces_Edge1Nic_name": {
+            "value": null
+        },
+        "networkInterfaces_Edge2Nic_name": {
+            "value": null
+        },
+        "networkInterfaces_RedisMasterNic_name": {
+            "value": null
+        },
+        "networkInterfaces_RedisSlave1Nic_name": {
+            "value": null
+        },
+        "networkInterfaces_RedisSlave2Nic_name": {
+            "value": null
+        },
+        "networkInterfaces_SN1Nic_name": {
+            "value": null
+        },
+        "networkInterfaces_SN2Nic_name": {
+            "value": null
+        },
+        "networkSecurityGroups_CTRL_NSG_name": {
+            "value": null
+        },
+        "networkSecurityGroups_Edge_NSG_name": {
+            "value": null
+        },
+        "networkSecurityGroups_SN_NSG_name": {
+            "value": null
+        },
+        "publicIPAddresses_CTRL_ELB_IP_name": {
+            "value": null
+        },
+        "publicIPAddresses_Ctrl1PublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_Ctrl2PublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_Edge1PublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_Edge2PublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_EN_ELB_IP_name": {
+            "value": null
+        },
+        "publicIPAddresses_RedisMasterPublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_RedisSlave1PublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_RedisSlave2PublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_SN_ELB_IP_name": {
+            "value": null
+        },
+        "publicIPAddresses_SN1PublicIP_name": {
+            "value": null
+        },
+        "publicIPAddresses_SN2PublicIP_name": {
+            "value": null
+        },
+        "virtualNetworks_VNet_name": {
+            "value": null
+        },
+        "storageAccounts_for_image_name": {
+            "value": null
+        },
+        "storageAccounts_for_vhd_name": {
+            "value": null
+        }
+    }
+}

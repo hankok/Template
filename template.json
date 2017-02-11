@@ -1,0 +1,1944 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment":{
+            "defaultValue": "STAGING",
+            "type": "String"
+        },
+        "region_id": {
+            "defaultValue": null,
+            "type": "String"
+        },
+        "subscriptions": {
+            "defaultValue": "03472440-96de-4569-aad8-4dafbeda5ec8",
+            "type": "String"
+        },
+
+        "publicKey_PlainText": {
+            "defaultValue": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC5BV6TAVslnLzcueZkWS3+GFb28iIbZkcfSRrSUbtfmDKbUYzYJC1MFd5vgLEx9fcVftz/OgTK/xfva4vLb5Gy2qijxs829yhkqJvORQXFtv/HAFcAV+JY0Vmq7KuBjofO7aCYqRswKL56gVVGqmQxQSo7+ST452M+6PczLeNFQH2kiiPZW4S7aM9Xkmj9PaNLVVfaHOorp4iLwxiEFrNQUTsYkrSHRy4cVqDMEZvqzGTbaAWwIMkiygNAaJcCK5dxKFSLkP7hxq81xZRdJUTiwMGF1Bl/XsqVsD5zGWvPpn5knjGIi6PUFx9tuhVJ8cGqiYnb8b6Coo0z4PdhXZ7 hanchen@HCMacbook",
+            "type": "String"
+        },
+        "Password_For_NetScalers": {
+            "defaultValue": "Citrix@0347244096",
+            "type": "String"
+        },
+        "Password_For_MAS": {
+            "defaultValue": "Citrix@0347244096",
+            "type": "String"
+        },
+
+        "container_for_image_name": {
+            "defaultValue": "container",
+            "type": "String"
+        },
+        "container_for_vhd_name": {
+            "defaultValue": "container",
+            "type": "String"
+        }
+
+    },
+    "variables": {
+        "availabilitySets_AvailabilitySetForCtrl_name": "AvailabilitySet-Ctrl",
+        "availabilitySets_AvailabilitySetForEdge_name": "AvailabilitySet-Edge",
+        "availabilitySets_AvailabilitySetForRedis_name":  "AvailabilitySet-Redis",
+        "availabilitySets_AvailabilitySetForSN_name": "AvailabilitySet-SN",
+        "virtualMachines_Ctrl1_name": "VM-Ctrl1",
+        "virtualMachines_Ctrl2_name": "VM-Ctrl2",
+        "virtualMachines_Edge1_name": "VM-Edge1",
+        "virtualMachines_Edge2_name": "VM-Edge2",
+        "virtualMachines_RedisMaster_name": "VM-RedisMaster",
+        "virtualMachines_RedisSlave1_name": "VM-RedisSlave1",
+        "virtualMachines_RedisSlave2_name": "VM-RedisSlave2",
+        "virtualMachines_SN1_name": "VM-SN1",
+        "virtualMachines_SN2_name": "VM-SN2",
+        "loadBalancers_CTRL_LB_name": "LB-Ctrl",
+        "loadBalancers_CTRL_Internal_LB_name": "LB-INT-Ctrl",
+        "loadBalancers_FR_LB_name": "LB-FR",
+        "loadBalancers_Redis_Internal_LB_name": "LB-INT-Redis",
+        "loadBalancers_SN_LB_name": "LB-SN",
+        "networkInterfaces_Ctrl1Nic_name": "NIC-Ctrl1",
+        "networkInterfaces_Ctrl2Nic_name": "NIC-Ctrl2",
+        "networkInterfaces_Edge1Nic_name": "NIC-Edge1",
+        "networkInterfaces_Edge2Nic_name": "NIC-Edge2",
+        "networkInterfaces_RedisMasterNic_name": "NIC-RedisMaster",
+        "networkInterfaces_RedisSlave1Nic_name": "NIC-RedisSlave1",
+        "networkInterfaces_RedisSlave2Nic_name": "NIC-RedisSlave2",
+        "networkInterfaces_SN1Nic_name": "NIC-SN1",
+        "networkInterfaces_SN2Nic_name": "NIC-SN2",
+        "networkSecurityGroups_CTRL_NSG_name": "NSG-CTRL",
+        "networkSecurityGroups_Edge_NSG_name": "NSG-Edge",
+        "networkSecurityGroups_SN_NSG_name": "NSG-SN",
+        "publicIPAddresses_CTRL_LB_IP_name": "PublicIP-LB-Ctrl",
+        "publicIPAddresses_Ctrl1PublicIP_name": "PublicIP-Ctrl1",
+        "publicIPAddresses_Ctrl2PublicIP_name": "PublicIP-Ctrl2",
+        "publicIPAddresses_Edge1PublicIP_name": "PublicIP-Edge1",
+        "publicIPAddresses_Edge2PublicIP_name": "PublicIP-Edge2",
+        "publicIPAddresses_FR_LB_IP_name": "PublicIP-LB-FR",
+        "publicIPAddresses_RedisMasterPublicIP_name": "PublicIP-RedisMaster",
+        "publicIPAddresses_RedisSlave1PublicIP_name": "PublicIP-RedisSlave1",
+        "publicIPAddresses_RedisSlave2PublicIP_name": "PublicIP-RedisSlave2",
+        "publicIPAddresses_SN_LB_IP_name": "PublicIP-LB-SN",
+        "publicIPAddresses_SN1PublicIP_name": "PublicIP-SN1",
+        "publicIPAddresses_SN2PublicIP_name": "PublicIP-SN2",
+        "resourceGroups": "[concat(parameters('environment'),'-', parameters('region_id'))]",
+        "virtualMachines_Ctrl1_adminPassword": "[parameters('Password_For_MAS')]",
+        "virtualMachines_Ctrl2_adminPassword": "[parameters('Password_For_MAS')]",
+        "virtualMachines_Edge1_adminPassword": "[parameters('Password_For_NetScalers')]",
+        "virtualMachines_Edge2_adminPassword": "[parameters('Password_For_NetScalers')]",
+        "virtualMachines_RedisMaster_adminPassword": "[parameters('Password_For_NetScalers')]",
+        "virtualMachines_RedisSlave1_adminPassword": "[parameters('Password_For_NetScalers')]",
+        "virtualMachines_RedisSlave2_adminPassword": "[parameters('Password_For_NetScalers')]",
+        "virtualMachines_SN1_adminPassword": "[parameters('Password_For_NetScalers')]",
+        "virtualMachines_SN2_adminPassword": "[parameters('Password_For_NetScalers')]",
+        "virtualNetworks_VNet_name": "[concat('VNet-NGS-', parameters('environment'), '-',parameters('region_id'))]",
+        "comments": "Source and destination storage accounts needs to be the same for VM disk, so here we specify the same account",
+        "storageAccounts_for_image_name": "[concat('storageimg',parameters('region_id'))]",
+        "storageAccounts_for_vhd_name": "[concat('storageimg',parameters('region_id'))]",
+        "loadBalancers_Ctrl_LB_id": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/frontendIPConfigurations/LBFrontEnd-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_1": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/backendAddressPools/HealthCheck-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_2": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/probes/HealthCheck-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_3": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/frontendIPConfigurations/LBFrontEnd-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_4": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/backendAddressPools/HealthCheck-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_5": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/probes/HealthCheck-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_6": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/frontendIPConfigurations/LBFrontEnd-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_7": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/backendAddressPools/HealthCheck-LB-Ctrl')]",
+        "loadBalancers_Ctrl_LB_id_8": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-Ctrl/probes/HealthCheck-LB-Ctrl')]",
+        "loadBalancers_Ctrl_Internal_LB_id": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-INT-Ctrl/frontendIPConfigurations/LBFrontEnd-LB-INT-Ctrl')]",
+        "loadBalancers_Ctrl_Internal_LB_id_1": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-INT-Ctrl/backendAddressPools/BackendPool-LB-INT-Ctrl')]",
+        "loadBalancers_Ctrl_Internal_LB_id_2": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-INT-Ctrl/probes/HealthCheck-LB-INT-Ctrl')]",
+        "loadBalancers_FR_LB_id": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-FR/frontendIPConfigurations/LBFrontEnd-LB-FR')]",
+        "loadBalancers_FR_LB_id_1": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-FR/backendAddressPools/BackendPool-LB-FR')]",
+        "loadBalancers_FR_LB_id_2": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-FR/probes/HealthCheck-LB-Edge')]",
+        "loadBalancers_Redis_Internal_LB_id": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-INT-Redis/frontendIPConfigurations/LBFrontEnd-LB-INT-Redis')]",
+        "loadBalancers_Redis_Internal_LB_id_1": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-INT-Redis/backendAddressPools/Backendpool-LB-INT-Redis')]",
+        "loadBalancers_Redis_Internal_LB_id_2": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-INT-Redis/probes/HealthCheck-Redis')]",
+        "loadBalancers_SN_LB_id": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-SN/frontendIPConfigurations/LBFrontEnd-LB-SN')]",
+        "loadBalancers_SN_LB_id_1": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-SN/backendAddressPools/BackendPool-LB-SN')]",
+        "loadBalancers_SN_LB_id_2": "[concat('/subscriptions/',parameters('subscriptions'), '/resourceGroups/', variables('resourceGroups'), '/providers/Microsoft.Network/loadBalancers/LB-SN/probes/HealthCheck-LB-SN')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[variables('availabilitySets_AvailabilitySetForCtrl_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "platformUpdateDomainCount": 5,
+                "platformFaultDomainCount": 3
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[variables('availabilitySets_AvailabilitySetForEdge_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "platformUpdateDomainCount": 5,
+                "platformFaultDomainCount": 3
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[variables('availabilitySets_AvailabilitySetForRedis_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "platformUpdateDomainCount": 5,
+                "platformFaultDomainCount": 3
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[variables('availabilitySets_AvailabilitySetForSN_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "platformUpdateDomainCount": 5,
+                "platformFaultDomainCount": 3
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_Ctrl1_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet":{
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForCtrl_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_Ctrl1_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/TestController458102.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_Ctrl1_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_Ctrl1_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"Controller\"\nexternal_pop1_fqdn=\"172.16.1.32\"\nexternal_pop2_fqdn=\"172.16.1.29\"\ninterpop_credentials=\"cf7834772d65:9befa6007eb\"\nenvironment=\"staging\"\nzone=\"', parameters('region_id'), '\"\nredis_node_ip=\"172.16.2.99\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_Ctrl1_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Ctrl1Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForCtrl_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Ctrl1Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_Ctrl2_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForCtrl_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_Ctrl2_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/TestController458102.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_Ctrl2_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_Ctrl2_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"Controller\"\nexternal_pop1_fqdn=\"172.16.1.32\"\nexternal_pop2_fqdn=\"172.16.1.29\"\ninterpop_credentials=\"cf7834772d65:9befa6007eb\"\nenvironment=\"staging\"\nzone=\"', parameters('region_id'), '\"\nredis_node_ip=\"172.16.2.99\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_Ctrl2_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Ctrl2Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForCtrl_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Ctrl2Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_Edge1_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForEdge_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_Edge1_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/NetscalerBase.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_Edge1_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_Edge1_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"edge\"\nnws_controller_ip=\"172.16.2.103\"\nnws_controller_port=\"8080\"\nnws_flowdirector_mode=\"1\"\nenvironment=\"staging\"\nzone=\"', parameters('region_id'), '\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_Edge1_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Edge1Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForEdge_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Edge1Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_Edge2_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForEdge_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_Edge2_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/NetscalerBase.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_Edge2_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_Edge2_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"edge\"\nnws_controller_ip=\"172.16.2.103\"\nnws_controller_port=\"8080\"\nnws_flowdirector_mode=\"1\"\nenvironment=\"staging\"\nzone=\"', parameters('region_id'), '\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_Edge2_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Edge2Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForEdge_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_Edge2Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_RedisMaster_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForRedis_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_RedisMaster_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/RedisTest.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_RedisMaster_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_RedisMaster_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"Redis\"\nredis_role=\"Master\"\nzone=\"', parameters('region_id'), '\"\nmaster_ip=\"\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_RedisMaster_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_RedisMasterNic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForRedis_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_RedisMasterNic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_RedisSlave1_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForRedis_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_RedisSlave1_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/RedisTest.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_RedisSlave1_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_RedisSlave1_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"Redis\"\nredis_role=\"Slave\"\nzone=\"', parameters('region_id'), '\"\nmaster_ip=\"172.16.2.100\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_RedisSlave1_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_RedisSlave1Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForRedis_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_RedisSlave1Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_RedisSlave2_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForRedis_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_RedisSlave2_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/RedisTest.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_RedisSlave2_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_RedisSlave2_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"Redis\"\nredis_role=\"Slave\"\nzone=\"', parameters('region_id'), '\"\nmaster_ip=\"172.16.2.100\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_RedisSlave2_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_RedisSlave2Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForRedis_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_RedisSlave2Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_SN1_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForSN_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_SN1_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/NetscalerBase.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_SN1_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_SN1_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"service\"\nnws_controller_ip=\"172.16.2.103\"\nnws_controller_port=\"8080\"\nnws_service_name=\"gwaas\"\nenvironment=\"staging\"\nzone=\"', parameters('region_id'), '\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_SN1_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_SN1Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForSN_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_SN1Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('virtualMachines_SN2_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForSN_name'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachines_SN2_name'),'-osDisk')]",
+                        "osType": "linux",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_image_name'), '.blob.core.windows.net', concat('/', parameters('container_for_image_name'), '/NetscalerBase.vhd'))]"
+                        },
+                        "vhd": {
+                            "uri": "[concat('https', '://', variables('storageAccounts_for_vhd_name'), '.blob.core.windows.net', concat('/', parameters('container_for_vhd_name'), '/', variables('virtualMachines_SN2_name'),'OSDisk.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachines_SN2_name')]",
+                    "adminUsername": "nsroot",
+                    "customData": "[base64(concat('node_type=\"service\"\nnws_controller_ip=\"172.16.2.103\"\nnws_controller_port=\"8080\"\nnws_service_name=\"gwaas\"\nenvironment=\"staging\"\nzone=\"', parameters('region_id'), '\"'))]",
+                    "linuxConfiguration": {
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/nsroot/.ssh/authorized_keys",
+                                    "keyData": "[parameters('publicKey_PlainText')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": [],
+                    "adminPassword": "[variables('virtualMachines_SN2_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_SN2Nic_name'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySets_AvailabilitySetForSN_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaces_SN2Nic_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('loadBalancers_CTRL_LB_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LBFrontEnd-LB-Ctrl",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_Ctrl_LB_IP_name'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "HealthCheck-LB-Ctrl"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "LBRule-LB-Ctrl",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id')]"
+                            },
+                            "frontendPort": 443,
+                            "backendPort": 8443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_1')]"
+                            },
+                            "probe": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_2')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "LBRule-LB-Ctrl9443",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_3')]"
+                            },
+                            "frontendPort": 9443,
+                            "backendPort": 9443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_4')]"
+                            },
+                            "probe": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_5')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "LBRule-LB-Ctrl8010",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_6')]"
+                            },
+                            "frontendPort": 8010,
+                            "backendPort": 8010,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_7')]"
+                            },
+                            "probe": {
+                                "id": "[variables('loadBalancers_Ctrl_LB_id_8')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "HealthCheck-LB-Ctrl",
+                        "properties": {
+                            "protocol": "Http",
+                            "port": 8666,
+                            "requestPath": "/Control/Ping",
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_Ctrl_LB_IP_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('loadBalancers_Ctrl_Internal_LB_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LBFrontEnd-LB-INT-Ctrl",
+                        "properties": {
+                            "privateIPAddress": "172.16.2.103",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet2')]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "BackendPool-LB-INT-Ctrl"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "LBRule-LB-INT-Ctrl",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('loadBalancers_Ctrl_Internal_LB_id')]"
+                            },
+                            "frontendPort": 8080,
+                            "backendPort": 8080,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('loadBalancers_Ctrl_Internal_LB_id_1')]"
+                            },
+                            "probe": {
+                                "id": "[variables('loadBalancers_Ctrl_Internal_LB_id_2')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "HealthCheck-LB-INT-Ctrl",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 8080,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('loadBalancers_FR_LB_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LBFrontEnd-LB-FR",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_FR_LB_IP_name'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[concat('BackendPool-', variables('loadBalancers_FR_LB_name'))]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "LBRule-LB-Edge",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('loadBalancers_FR_LB_id')]"
+                            },
+                            "frontendPort": 443,
+                            "backendPort": 11443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('loadBalancers_FR_LB_id_1')]"
+                            },
+                            "probe": {
+                                "id": "[variables('loadBalancers_FR_LB_id_2')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "HealthCheck-LB-Edge",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 11443,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_FR_LB_IP_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('loadBalancers_Redis_Internal_LB_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LBFrontEnd-LB-INT-Redis",
+                        "properties": {
+                            "privateIPAddress": "172.16.2.99",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet2')]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "BackendPool-LB-INT-Redis"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "LBRule-Redis",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('loadBalancers_Redis_Internal_LB_id')]"
+                            },
+                            "frontendPort": 6379,
+                            "backendPort": 6379,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('loadBalancers_Redis_Internal_LB_id_1')]"
+                            },
+                            "probe": {
+                                "id": "[variables('loadBalancers_Redis_Internal_LB_id_2')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "HealthCheck-Redis",
+                        "properties": {
+                            "protocol": "Http",
+                            "port": 8666,
+                            "requestPath": "/Control/Ping",
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('loadBalancers_SN_LB_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LBFrontEnd-LB-SN",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_SN_LB_IP_name'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[concat('BackendPool-', variables('loadBalancers_SN_LB_name'))]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "LBRule-LB-SN",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('loadBalancers_SN_LB_id')]"
+                            },
+                            "frontendPort": 443,
+                            "backendPort": 10443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('loadBalancers_SN_LB_id_1')]"
+                            },
+                            "probe": {
+                                "id": "[variables('loadBalancers_SN_LB_id_2')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "HealthCheck-LB-SN",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 10443,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_SN_LB_IP_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_Ctrl1Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.2.104",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet2')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Ctrl_Internal_LB_name')), '/backendAddressPools/BackendPool-LB-INT-Ctrl')]"
+                                },
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_CTRL_LB_name')), '/backendAddressPools/HealthCheck-LB-Ctrl')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Ctrl_NSG_name'))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Ctrl_Internal_LB_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_CTRL_LB_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Ctrl_NSG_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_Ctrl2Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.2.105",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet2')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Ctrl_Internal_LB_name')), '/backendAddressPools/BackendPool-LB-INT-Ctrl')]"
+                                },
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_CTRL_LB_name')), '/backendAddressPools/HealthCheck-LB-Ctrl')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Ctrl_NSG_name'))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Ctrl_Internal_LB_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_CTRL_LB_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Ctrl_NSG_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_Edge1Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.1.100",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet1')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_FR_LB_name')), '/backendAddressPools/BackendPool-LB-FR')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Edge_NSG_name'))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_FR_LB_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Edge_NSG_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_Edge2Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.1.101",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet1')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_FR_LB_name')), '/backendAddressPools/BackendPool-LB-FR')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Edge_NSG_name'))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_FR_LB_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_Edge_NSG_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_RedisMasterNic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.2.100",
+                            "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_RedisMasterPublicIP_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet2')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Redis_Internal_LB_name')), '/backendAddressPools/BackendPool-LB-INT-Redis')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_RedisMasterPublicIP_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Redis_Internal_LB_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_RedisSlave2Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.2.102",
+                            "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_RedisSlave2PublicIP_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet2')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Redis_Internal_LB_name')), '/backendAddressPools/BackendPool-LB-INT-Redis')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_RedisSlave2PublicIP_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Redis_Internal_LB_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_RedisSlave1Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.2.101",
+                            "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_RedisSlave1PublicIP_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet2')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Redis_Internal_LB_name')), '/backendAddressPools/BackendPool-LB-INT-Redis')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddresses_RedisSlave1PublicIP_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_Redis_Internal_LB_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_SN1Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.0.100",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet0')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_SN_LB_name')), '/backendAddressPools/BackendPool-LB-SN')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_SN_LB_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaces_SN2Nic_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "172.16.0.101",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name')), '/subnets/subnet0')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_SN_LB_name')), '/backendAddressPools/BackendPool-LB-SN')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_VNet_name'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancers_SN_LB_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroups_Ctrl_NSG_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "sslfrominternalLB",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8080",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "sslfromelb",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "fromelb8443",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "deny-all-in",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "0-65535",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 150,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "trustservice",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "ssh",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "redis",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "6379",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "172.16.2.0/24",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "allow-all-out",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "0-65535",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "interctrl8010",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8010",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 140,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroups_Edge_NSG_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "ssh",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Reg",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8080",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "ssl",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "11443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "toSN",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "10443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "172.16.0.0/24",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "deny-all-in",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "0-65535",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 130,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "deny-all-out",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "0-65535",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 120,
+                            "direction": "Outbound"
+                        }
+                    }
+                ]
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroups_SN_NSG_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "ssh",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "172.16.3.0/16",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "ssl",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "10443",
+                            "sourceAddressPrefix": "172.16.1.0/24",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Reg",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8080",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "172.16.2.0/24",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "STA",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "deny-all-out",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "0-65535",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 120,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "deny-all-in",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "0-65535",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 130,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "ssl_from_elb",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "10443",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_Ctrl_LB_IP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('loadBalancers_CTRL_LB_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_Ctrl1PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_Ctrl1_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_Ctrl2PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_Ctrl2_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_Edge1PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_Edge1_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_Edge2PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_Edge2_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_FR_LB_IP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('loadBalancers_FR_LB_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_RedisMasterPublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_RedisMaster_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_RedisSlave1PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_RedisSlave1_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_RedisSlave2PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_RedisSlave2_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_SN_LB_IP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('loadBalancers_SN_LB_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_SN1PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_SN1_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddresses_SN2PublicIP_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('virtualMachines_SN2_name'), '-ngs-', parameters('environment')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworks_VNet_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "[parameters('region_id')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "172.16.0.0/16"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": []
+                },
+                "subnets": [
+                    {
+                        "name": "subnet0",
+                        "properties": {
+                            "addressPrefix": "172.16.0.0/24"
+                        }
+                    },
+                    {
+                        "name": "subnet1",
+                        "properties": {
+                            "addressPrefix": "172.16.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "subnet2",
+                        "properties": {
+                            "addressPrefix": "172.16.2.0/24"
+                        }
+                    },
+                    {
+                        "name": "subnet3",
+                        "properties": {
+                            "addressPrefix": "172.16.3.0/24"
+                        }
+                    }
+                ]
+            },
+            "resources": [],
+            "dependsOn": []
+        }
+    ]
+}
